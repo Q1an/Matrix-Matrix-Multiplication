@@ -20,10 +20,11 @@
 // elements at (row,col) and (row+1,col).
 //
 void mmult(int size,int Xpitch, const int X[],int Ypitch, const int Y[],int Zpitch, int Z[]) {
-    for (int i = 0; i < size; i++)
-        for (int j = 0; j < size; j++) {
+    int i=0,j=0,k=0;
+    for (i = 0; i < size; i++)
+        for (j = 0; j < size; j++) {
             int sum = 0;
-            for (int k = 0; k < size; k++)
+            for (k = 0; k < size; k++)
                 sum += X[i*Xpitch + k]*Y[k*Ypitch + j];
             Z[i*Zpitch + j] = sum;
         }
@@ -33,8 +34,9 @@ void mmult(int size,int Xpitch, const int X[],int Ypitch, const int Y[],int Zpit
 // S = X + Y
 //
 void madd(int size,int Xpitch, const int X[],int Ypitch, const int Y[],int Spitch, int S[]) {
-    for (int i = 0; i < size; i++)
-        for (int j = 0; j < size; j++)
+    int i,j;
+    for (i = 0; i < size; i++)
+        for (j = 0; j < size; j++)
             S[i*Spitch + j] = X[i*Xpitch + j] + Y[i*Ypitch + j];
 }
 
@@ -42,8 +44,9 @@ void madd(int size,int Xpitch, const int X[],int Ypitch, const int Y[],int Spitc
 // S = X - Y
 //
 void msub(int size,int Xpitch, const int X[],int Ypitch, const int Y[], int Spitch, int S[]) {
-    for (int i = 0; i < size; i++)
-        for (int j = 0; j < size; j++)
+    int i,j;
+    for (i = 0; i < size; i++)
+        for (j = 0; j < size; j++)
             S[i*Spitch + j] = X[i*Xpitch + j] - Y[i*Ypitch + j];
 }
 
@@ -101,7 +104,8 @@ void strassen(int size,int Xpitch, const int X[],int Ypitch, const int Y[],int Z
     
      int *P[7];   // allocate temp matrices off heap
     const int sz = n*n*sizeof( int);
-    for (int i = 0; i < 7; i++)
+    int i=0;
+    for (i = 0; i < 7; i++)
         P[i] = ( int *) malloc(sz);
      int *T = ( int *) malloc(sz);
      int *U = ( int *) malloc(sz);
@@ -155,7 +159,7 @@ void strassen(int size,int Xpitch, const int X[],int Ypitch, const int Y[],int Z
     
     free(U);  // deallocate temp matrices
     free(T);
-    for (int i = 6; i >= 0; i--)
+    for (i = 6; i >= 0; i--)
         free(P[i]);
 }
 
