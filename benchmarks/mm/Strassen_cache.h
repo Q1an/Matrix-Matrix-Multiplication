@@ -11,9 +11,10 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+const int block =8;
+const int leafsize =8;
 
-//const int leafsize = 16;
-
+void naive(int size,int Xpitch, const int X[],int Ypitch, const int Y[],int Zpitch, int Z[]);
 void strassen(int size,int Xpitch, const int X[],int Ypitch, const int Y[],int Zpitch, int Z[]);
 void msub(int size,int Xpitch, const int X[],int Ypitch, const int Y[],int Spitch, int S[]);
 void madd(int size,int Xpitch, const int X[],int Ypitch, const int Y[],int Spitch, int S[]);

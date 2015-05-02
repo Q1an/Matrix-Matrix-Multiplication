@@ -9,20 +9,27 @@
 #include "Strassen_cache.h"
 
 
+void naive(int size,int Xpitch, const int X[],int Ypitch, const int Y[],int Zpitch, int Z[]){
+    int i;
+    int j;
+    int k;
+    for(i=0; i<size; i++){
+        for(j=0; j<size; j++){
+            Z[i*Zpitch+j]=0;
+            for(k=0; k<size; k++){
+				Z[i*Zpitch+j]+=X[i*Xpitch+k]*Y[Ypitch*k+j];
+            }
+        }
+    }
+}
 
 
 
-
-//
-// Classic O(N^3) square matrix multiplication.
-// Z = X*Y
-// All matrices are NxN and stored in row major order
-// each with a specified pitch.
-// The pitch is the distance (in  int's) between
-// elements at (row,col) and (row+1,col).
-//
+//Here used the cache tiling strategy to calculate the multiplication of certain size
+//Variable block can be adjusted to optimize
+// note that block here should be smaller than
 void mmult(int size,int Xpitch, const int X[],int Ypitch, const int Y[],int Zpitch, int Z[]) {
-    int i=0,j=0,k=0,jj=0,kk=0,block=32,Xi,Zi;
+    int i=0,j=0,k=0,jj=0,kk=0,Xi,Zi;
     for (jj=0;jj<size;jj=jj+block){
         for(kk=0;kk<size;kk=kk+block){
             for (i = 0; i < size; i++){
@@ -40,9 +47,8 @@ void mmult(int size,int Xpitch, const int X[],int Ypitch, const int Y[],int Zpit
     
 }
 
-//
+
 // S = X + Y
-//
 void madd(int size,int Xpitch, const int X[],int Ypitch, const int Y[],int Spitch, int S[]) {
     int i,j,Si,Xi,Yi;
     for (i = 0; i < size; i++){
@@ -54,9 +60,8 @@ void madd(int size,int Xpitch, const int X[],int Ypitch, const int Y[],int Spitc
     }
 }
 
-//
+
 // S = X - Y
-//
 void msub(int size,int Xpitch, const int X[],int Ypitch, const int Y[], int Spitch, int S[]) {
     int i,j,Si,Xi,Yi;
     for (i = 0; i < size; i++){
@@ -68,69 +73,44 @@ void msub(int size,int Xpitch, const int X[],int Ypitch, const int Y[], int Spit
     }
 }
 
-//
-// Volker Strassen algorithm for matrix multiplication.
-// Theoretical Runtime is O(N^2.807).
-// Assume NxN matrices where N is a power of two.
-// Algorithm:
-//   Matrices X and Y are split into four smaller
-//   (N/2)x(N/2) matrices as follows:
-//          _    _          _   _
-//     X = | A  B |    Y = | E F |
-//         | C  D |        | G H |
-//          -    -          -   -
-//   Then we build the following 7 matrices (requiring
-//   seven (N/2)x(N/2) matrix multiplications -- this is
-//   where the 2.807 = log2(7) improvement comes from):
-//     P0 = A*(F - H);
-//     P1 = (A + B)*H
-//     P2 = (C + D)*E
-//     P3 = D*(G - E);
-//     P4 = (A + D)*(E + H)
-//     P5 = (B - D)*(G + H)
-//     P6 = (A - C)*(E + F)
-//   The final result is
-//        _                                            _
-//   Z = | (P3 + P4) + (P5 - P1)   P0 + P1              |
-//       | P2 + P3                 (P0 + P4) - (P2 + P6)|
-//        -                                            -
-//
+
+// Strassen algorithm for matrix multiplication
+// Theoretical Runtime is O(N^2.807)
+// But due to the cache size, we need to shift the size threshold to optimize
 void strassen(int size,int Xpitch, const int X[],int Ypitch, const int Y[],int Zpitch, int Z[]) {
-    //
-    // Recursive base case.
-    // If matrices are 16x16 or smaller we just use
-    // the conventional algorithm.
-    // At what size we should switch will vary based
-    // on hardware platform.
-    //
-    if (size <= 32) {
+
+    
+    if (size <= leafsize) { //change the threshold to optimize the performance
         int i,j;
-        for (i = 0; i < size; i++)
-            for (j = 0; j < size; j++)
+        for (i = 0; i < size; i++){
+            for (j = 0; j < size; j++){
                 Z[i*Zpitch + j] = 0;
+            }
+        }
+        
         mmult(size, Xpitch, X, Ypitch, Y, Zpitch, Z);
         return;
     }
     
-    const int n = size/2;      // size of sub-matrices
+    const int n = size/2;      // size of sub-matrices (size is always the power of 2)
     
-    const int *A = X;    // A-D matrices embedded in X
+    const int *A = X;    // Divide X into 4 sub-matrix
     const int *B = X + n;
     const int *C = X + n*Xpitch;
     const int *D = C + n;
     
-    const int *E = Y;    // E-H matrices embeded in Y
+    const int *E = Y;    // Divide Y into 4 sub-matrix
     const int *F = Y + n;
     const int *G = Y + n*Ypitch;
     const int *H = G + n;
     
-     int *P[7];   // allocate temp matrices off heap
+    int *P[7];   // allocate temp matrices off heap
     const int sz = n*n*sizeof( int);
     int i=0;
     for (i = 0; i < 7; i++)
         P[i] = ( int *) malloc(sz);
-     int *T = ( int *) malloc(sz);
-     int *U = ( int *) malloc(sz);
+    int *T = ( int *) malloc(sz);
+    int *U = ( int *) malloc(sz);
     
     // P0 = A*(F - H);
     msub(n, Ypitch, F, Ypitch, H, n, T);
@@ -179,19 +159,13 @@ void strassen(int size,int Xpitch, const int X[],int Ypitch, const int Y[],int Z
     madd(n, n, P[2], n, P[6], n, U);
     msub(n, n, T, n, U, Zpitch, Z + n*(Zpitch + 1));
     
-    free(U);  // deallocate temp matrices
+    free(U);  
     free(T);
     for (i = 6; i >= 0; i--)
         free(P[i]);
 }
 
-/*void mrand(int N, int pitch,  int M[]) {
-    const int r = 10.0;
-    for (int i = 0; i < N; i++)
-        for (int j = 0; j < N; j++)
-            M[i*pitch + j] = r*(2*drand48() - 1);
-}*/
 
-
+//I have written another version of cache tiling strategy, however based on the test on my own computer, I think 1000 is still not a big enough size to benefit from this strategy.
 
 

@@ -1,15 +1,17 @@
 #include "mm_ip.h"
 #include "Strassen_cache.h"
 #include "time.h"
+const int Next_2_power = 1024;
+#define N 160 //when use the 1000*1000 matrix as a test, please change this to 1000
 int main(){
 	int i;
 	int j;
-	//int id;
+
 
 
 	const int a[N][N]={
     #include "in_a_medium.txt"
-	};
+	};//change the file as well
 
 	const int b[N][N]={
     #include "in_b_medium.txt"
@@ -18,31 +20,40 @@ int main(){
 	const int out_expected[N][N]={
     #include "out_c_medium.txt"
 	};
+    
     int *X, *Y, *Z;
-    X = ( int*) malloc(256*256*sizeof( int));
-    Y = ( int*) malloc(256*256*sizeof( int));
-    Z = ( int*) malloc(256*256*sizeof( int));
+    X = (int*) malloc(Next_2_power*Next_2_power*sizeof(int));
+    Y = (int*) malloc(Next_2_power*Next_2_power*sizeof(int));
+    Z = (int*) malloc(Next_2_power*Next_2_power*sizeof(int));
 	for(i=0; i<N; i++){
 		for(j=0; j<N; j++){
-            X[i*256 + j] = a[i][j];
-            Y[i*256 + j] = b[i][j];
-            Z[i*256+j]=0;
+            X[i*Next_2_power + j] = a[i][j];
+            Y[i*Next_2_power + j] = b[i][j];
+            Z[i*Next_2_power+j]=0;
 		}
-	}
+	}//initialization the X,Y,Z matrix as array here
 
 	// HW computation
     int out[N][N];
     
     clock_t start=clock();
-    strassen(256, 256, X, 256, Y, 256, Z);
+    // use clock in case we need to test the time on other platform
+    
+    // The naive version has been copied here, you can test it if you want
+    // naive(Next_2_power, Next_2_power, X, Next_2_power, Y, Next_2_power, Z);
+    
+    strassen(Next_2_power, Next_2_power, X, Next_2_power, Y, Next_2_power, Z);
     
     clock_t end=clock();
+    
     printf("%fms",(double)(end-start)/CLOCKS_PER_SEC*1000);
+    
     for(i=0; i<N; i++){
         for(j=0; j<N; j++){
-            out[i][j]=Z[i*256 + j];
+            out[i][j]=Z[i*Next_2_power + j];
         }
-    }
+    }//output to the output 2D-array 
+    
 	// Verification
 	for(i=0; i<N; i++){
 		for(j=0; j<N; j++){
