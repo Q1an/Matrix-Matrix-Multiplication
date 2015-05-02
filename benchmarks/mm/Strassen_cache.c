@@ -85,7 +85,7 @@ void strassen(int size,int Xpitch, const int X[],int Ypitch, const int Y[],int Z
     // At what size we should switch will vary based
     // on hardware platform.
     //
-    if (size <= 16) {
+    if (size <= 32) {
         mmult(size, Xpitch, X, Ypitch, Y, Zpitch, Z);
         return;
     }

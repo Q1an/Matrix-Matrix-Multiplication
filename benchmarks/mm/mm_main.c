@@ -1,5 +1,6 @@
 #include "mm_ip.h"
 #include "Strassen_cache.h"
+#include "time.h"
 int main(){
 	int i;
 	int j;
@@ -25,12 +26,18 @@ int main(){
 		for(j=0; j<N; j++){
             X[i*256 + j] = a[i][j];
             Y[i*256 + j] = b[i][j];
+            Z[i*256+j]=0;
 		}
 	}
 
 	// HW computation
     int out[N][N];
+    
+    clock_t start=clock();
     strassen(256, 256, X, 256, Y, 256, Z);
+    
+    clock_t end=clock();
+    printf("%fms",(double)(end-start)/CLOCKS_PER_SEC*1000);
     for(i=0; i<N; i++){
         for(j=0; j<N; j++){
             out[i][j]=Z[i*256 + j];
