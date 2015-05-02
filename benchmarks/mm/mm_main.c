@@ -1,10 +1,9 @@
-#include <stdio.h>
 #include "mm_ip.h"
-
+#include "Strassen_cache.h"
 int main(){
 	int i;
 	int j;
-	int id;
+	//int id;
 
 
 	const int a[N][N]={
@@ -18,19 +17,25 @@ int main(){
 	const int out_expected[N][N]={
     #include "out_c_medium.txt"
 	};
-
-	int in[2*N][N];
+    int *X, *Y, *Z;
+    X = ( int*) malloc(256*256*sizeof( int));
+    Y = ( int*) malloc(256*256*sizeof( int));
+    Z = ( int*) malloc(256*256*sizeof( int));
 	for(i=0; i<N; i++){
 		for(j=0; j<N; j++){
-			in[i][j]=a[i][j];
-			in[i+N][j]=b[i][j];
+            X[i*256 + j] = a[i][j];
+            Y[i*256 + j] = b[i][j];
 		}
 	}
 
 	// HW computation
-	int out[N][N];
-	mm_ip(in, out);
-
+    int out[N][N];
+    strassen(256, 256, X, 256, Y, 256, Z);
+    for(i=0; i<N; i++){
+        for(j=0; j<N; j++){
+            out[i][j]=Z[i*256 + j];
+        }
+    }
 	// Verification
 	for(i=0; i<N; i++){
 		for(j=0; j<N; j++){
@@ -41,6 +46,9 @@ int main(){
 		}
 	}
 	printf("Verification passed!\n");
+    free(X);
+    free(Y);
+    free(Z);
 	return 0;
 
 }
