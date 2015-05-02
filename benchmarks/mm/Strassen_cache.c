@@ -22,16 +22,19 @@
 // elements at (row,col) and (row+1,col).
 //
 void mmult(int size,int Xpitch, const int X[],int Ypitch, const int Y[],int Zpitch, int Z[]) {
-    int i=0,j=0,k=0,jj=0,kk=0,block=8;
+    int i=0,j=0,k=0,jj=0,kk=0,block=32,Xi,Zi;
     for (jj=0;jj<size;jj=jj+block){
         for(kk=0;kk<size;kk=kk+block){
-            for (i = 0; i < size; i++)
+            for (i = 0; i < size; i++){
+                Xi=i*Xpitch;
+                Zi=Zpitch*i;
                 for (j = jj; j < jj+block; j++) {
                     int sum = 0;
                     for (k = kk; k < kk+block; k++)
-                        sum += X[i*Xpitch + k]*Y[k*Ypitch + j];
-                    Z[i*Zpitch + j] += sum;
+                        sum += X[Xi + k]*Y[k*Ypitch + j];
+                    Z[Zi + j] += sum;
                 }
+            }
         }
     }
     
@@ -41,20 +44,28 @@ void mmult(int size,int Xpitch, const int X[],int Ypitch, const int Y[],int Zpit
 // S = X + Y
 //
 void madd(int size,int Xpitch, const int X[],int Ypitch, const int Y[],int Spitch, int S[]) {
-    int i,j;
-    for (i = 0; i < size; i++)
+    int i,j,Si,Xi,Yi;
+    for (i = 0; i < size; i++){
+        Si=i*Spitch;
+        Xi=i*Xpitch;
+        Yi=i*Ypitch;
         for (j = 0; j < size; j++)
-            S[i*Spitch + j] = X[i*Xpitch + j] + Y[i*Ypitch + j];
+            S[Si + j] = X[Xi + j] + Y[Yi + j];
+    }
 }
 
 //
 // S = X - Y
 //
 void msub(int size,int Xpitch, const int X[],int Ypitch, const int Y[], int Spitch, int S[]) {
-    int i,j;
-    for (i = 0; i < size; i++)
+    int i,j,Si,Xi,Yi;
+    for (i = 0; i < size; i++){
+        Si=i*Spitch;
+        Xi=i*Xpitch;
+        Yi=i*Ypitch;
         for (j = 0; j < size; j++)
-            S[i*Spitch + j] = X[i*Xpitch + j] - Y[i*Ypitch + j];
+            S[Si + j] = X[Xi + j] - Y[Yi + j];
+    }
 }
 
 //
@@ -92,7 +103,7 @@ void strassen(int size,int Xpitch, const int X[],int Ypitch, const int Y[],int Z
     // At what size we should switch will vary based
     // on hardware platform.
     //
-    if (size <= 16) {
+    if (size <= 32) {
         int i,j;
         for (i = 0; i < size; i++)
             for (j = 0; j < size; j++)
