@@ -11,6 +11,8 @@
 
 
 
+
+
 //
 // Classic O(N^3) square matrix multiplication.
 // Z = X*Y
@@ -20,14 +22,19 @@
 // elements at (row,col) and (row+1,col).
 //
 void mmult(int size,int Xpitch, const int X[],int Ypitch, const int Y[],int Zpitch, int Z[]) {
-    int i=0,j=0,k=0;
-    for (i = 0; i < size; i++)
-        for (j = 0; j < size; j++) {
-            int sum = 0;
-            for (k = 0; k < size; k++)
-                sum += X[i*Xpitch + k]*Y[k*Ypitch + j];
-            Z[i*Zpitch + j] = sum;
+    int i=0,j=0,k=0,jj=0,kk=0,block=8;
+    for (jj=0;jj<size;jj=jj+block){
+        for(kk=0;kk<size;kk=kk+block){
+            for (i = 0; i < size; i++)
+                for (j = jj; j < jj+block; j++) {
+                    int sum = 0;
+                    for (k = kk; k < kk+block; k++)
+                        sum += X[i*Xpitch + k]*Y[k*Ypitch + j];
+                    Z[i*Zpitch + j] += sum;
+                }
         }
+    }
+    
 }
 
 //
@@ -85,7 +92,11 @@ void strassen(int size,int Xpitch, const int X[],int Ypitch, const int Y[],int Z
     // At what size we should switch will vary based
     // on hardware platform.
     //
-    if (size <= 32) {
+    if (size <= 16) {
+        int i,j;
+        for (i = 0; i < size; i++)
+            for (j = 0; j < size; j++)
+                Z[i*Zpitch + j] = 0;
         mmult(size, Xpitch, X, Ypitch, Y, Zpitch, Z);
         return;
     }
