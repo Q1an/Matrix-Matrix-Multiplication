@@ -29,7 +29,7 @@ void naive(int size,int Xpitch, const int X[],int Ypitch, const int Y[],int Zpit
 //Variable block can be adjusted to optimize
 // note that block here should be smaller than
 void mmult(int size,int Xpitch, const int X[],int Ypitch, const int Y[],int Zpitch, int Z[]) {
-  int block=32,i=0,j=0,k=0,jj=0,kk=0,Xi,Zi;
+    int i=0,j=0,k=0,jj=0,kk=0,Xi,Zi;
     for (jj=0;jj<size;jj=jj+block){
         for(kk=0;kk<size;kk=kk+block){
             for (i = 0; i < size; i++){
@@ -80,7 +80,7 @@ void msub(int size,int Xpitch, const int X[],int Ypitch, const int Y[], int Spit
 void strassen(int size,int Xpitch, const int X[],int Ypitch, const int Y[],int Zpitch, int Z[]) {
 
     
-    if (size <= 64) { //change the threshold to optimize the performance
+    if (size <= leafsize) { //change the threshold to optimize the performance
         int i,j;
         for (i = 0; i < size; i++){
             for (j = 0; j < size; j++){
