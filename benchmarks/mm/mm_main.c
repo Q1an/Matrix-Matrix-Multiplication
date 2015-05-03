@@ -40,7 +40,7 @@ int main(){
     // use clock in case we need to test the time on other platform
     
     // The naive version has been copied here, you can test it if you want
-    // naive(Next_2_power, Next_2_power, X, Next_2_power, Y, Next_2_power, Z);
+     //naive(Next_2_power, Next_2_power, X, Next_2_power, Y, Next_2_power, Z);
     
     strassen(Next_2_power, Next_2_power, X, Next_2_power, Y, Next_2_power, Z);
     
