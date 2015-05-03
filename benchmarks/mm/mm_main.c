@@ -1,6 +1,18 @@
 #include "mm_ip.h"
 #include "Strassen_cache.h"
 #include "time.h"
+
+
+//
+//http://students.ceid.upatras.gr/~papadakis/mmm/mmm.pdf
+//Difference between ikj-algorithm and ijk
+//
+//
+
+
+
+
+
 const int Next_2_power = 1024;
 #define N 160 //when use the 1000*1000 matrix as a test, please change this to 1000
 int main(){
